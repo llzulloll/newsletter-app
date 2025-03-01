@@ -1,20 +1,30 @@
 const axios = require("axios");
 
-async function fetchTopStories() {
+const categories = ["business", "tech", "sports", "entertainment", "science", "general", "health", "food", "travel", "politics"]; // Categories to fetch top stories for
+
+async function fetchTopStoriesByCategory() {
     try {
-        const url = `https://api.thenewsapi.com/v1/news/top?api_token=${process.env.NEWS_API_KEY}&language=en&limit=3`;
+        const results = {};
 
-        const response = await axios.get(url);
+        for (const category of categories) {
+            const url = `https://api.thenewsapi.com/v1/news/top?api_token=${process.env.NEWS_API_KEY}&language=en&categories=${category}&limit=3`;
 
-        if (response.status !== 200) {
-            throw new Error(`TheNewsAPI Error: ${response.data.message}`);
+            const response = await axios.get(url);
+
+            if (response.status !== 200) {
+                console.warn(`⚠️ TheNewsAPI Warning: ${response.data.message}`);
+                results[category] = [];
+                continue;
+            }
+
+            results[category] = response.data.data || []; // Store top 3 articles for each category
         }
 
-        return response.data.data; // Return top 3 stories
+        return results; // Return an object with categories as keys
     } catch (error) {
         console.error(`❌ Error fetching top stories:`, error.message);
-        return [];
+        return {};
     }
 }
 
-module.exports = { fetchTopStories };
+module.exports = { fetchTopStoriesByCategory };

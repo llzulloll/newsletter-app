@@ -60,17 +60,18 @@ router.post("/send-newsletter", async (req, res) => {
 });
 
 
-const { fetchTopStories } = require("../services/newsService");
+const { fetchTopStoriesByCategory } = require("../services/newsService");
 
 router.get("/top-stories", async (req, res) => {
     try {
-        const articles = await fetchTopStories();
-        res.json({ articles });
+        const articlesByCategory = await fetchTopStoriesByCategory();
+        res.json({ articlesByCategory });
     } catch (error) {
-        console.error("❌ Error fetching top stories:", error);
+        console.error("❌ Error fetching top stories by category:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
+
 
 const { summarizeText } = require("../services/aiService");
 
