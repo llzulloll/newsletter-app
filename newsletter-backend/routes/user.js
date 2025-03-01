@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
+const { sendConfirmationEmail } = require("../services/emailService");
 
 // Subscribe a user
 router.post("/subscribe", async (req, res) => {
@@ -11,6 +12,9 @@ router.post("/subscribe", async (req, res) => {
         if (!user) {
             user = new User({ email, categories, frequency });
             await user.save();
+
+            // Send confirmation email
+            // await sendConfirmationEmail(email, categories, frequency);
         } else {
             user.categories = categories;
             user.frequency = frequency;

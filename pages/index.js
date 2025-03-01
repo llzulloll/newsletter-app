@@ -1,23 +1,22 @@
 import { useState } from "react";
+import { useRouter } from "next/router";
 
 export default function LandingPage() {
     const [email, setEmail] = useState("");
     const [categories, setCategories] = useState([]);
     const [frequency, setFrequency] = useState("daily");
     const [message, setMessage] = useState("");
+    const router = useRouter();
 
-    const allCategories = [
-        "business", "tech", "sports", "entertainment", "science", "general", "health", "food", "travel", "politics"
-    ];
+    const allCategories = ["business", "tech", "sports", "entertainment", "science", "general", "health", "food", "travel", "politics"];
+    ;
 
-    // Handle category selection (toggle between checked/unchecked)
     const handleCategoryChange = (category) => {
         setCategories(prev =>
             prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]
         );
     };
 
-    // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -45,7 +44,7 @@ export default function LandingPage() {
 
     return (
         <div style={styles.container}>
-            <h1>📨 Welcome to the News Digest!</h1>
+            <h1>📨 Welcome to News Digest!</h1>
             <p>Stay updated with curated news delivered straight to your inbox.</p>
 
             <form onSubmit={handleSubmit} style={styles.form}>
@@ -77,20 +76,21 @@ export default function LandingPage() {
                 <select value={frequency} onChange={(e) => setFrequency(e.target.value)} style={styles.input}>
                     <option value="daily">Daily</option>
                     <option value="weekly">Weekly</option>
-                    <option value="biweekly">Biweekly</option>
-                    <option value="monthly">Monthly</option>
-
                 </select>
 
                 <button type="submit" style={styles.button}>Subscribe</button>
             </form>
 
             {message && <p style={{ marginTop: "10px", color: message.includes("✅") ? "green" : "red" }}>{message}</p>}
+
+            <div style={{ marginTop: "20px" }}>
+                <a href="/unsubscribe" style={styles.unsubscribeLink}>❌ Unsubscribe</a>
+            </div>
         </div>
     );
 }
 
-// Basic inline styles
+// Inline styles
 const styles = {
     container: {
         maxWidth: "500px",
@@ -138,5 +138,10 @@ const styles = {
         border: "none",
         borderRadius: "5px",
         cursor: "pointer",
+    },
+    unsubscribeLink: {
+        color: "#dc3545",
+        fontWeight: "bold",
+        textDecoration: "none",
     }
 };
