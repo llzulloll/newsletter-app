@@ -8,5 +8,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.4",
+    "axios": "^1.8.1",
+    "newsapi": "^2.4.1"
+  }
 }

@@ -36,4 +36,55 @@ router.post("/unsubscribe", async (req, res) => {
     }
 });
 
+const { sendNewsletter } = require("../services/emailService");
+
+router.post("/send-newsletter", async (req, res) => {
+    try {
+        const { email, categories } = req.body;
+        let newsSummaries = [];
+
+        for (const category of categories) {
+            const articles = await fetchNews(category);
+            for (const article of articles) {
+                const summary = await summarizeText(article.content || article.description);
+                newsSummaries.push({ title: article.title, summary, url: article.url });
+            }
+        }
+
+        await sendNewsletter(email, newsSummaries);
+        res.json({ message: "✅ Newsletter sent successfully" });
+    } catch (error) {
+        console.error("❌ Error sending newsletter:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
+const { fetchTopStories } = require("../services/newsService");
+
+router.get("/top-stories", async (req, res) => {
+    try {
+        const articles = await fetchTopStories();
+        res.json({ articles });
+    } catch (error) {
+        console.error("❌ Error fetching top stories:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+const { summarizeText } = require("../services/aiService");
+
+router.post("/summarize", async (req, res) => {
+    try {
+        const { text } = req.body;
+        if (!text) return res.status(400).json({ error: "Text is required" });
+
+        const summary = await summarizeText(text);
+        res.json({ summary });
+    } catch (error) {
+        console.error("❌ Error summarizing text:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 module.exports = router;
