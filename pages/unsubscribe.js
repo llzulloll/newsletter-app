@@ -10,6 +10,13 @@ export default function UnsubscribePage() {
         setLoading(true);
         setMessage("");
 
+        // Validate email format before sending request
+        if (!validateEmail(email)) {
+            setMessage("Please enter a valid email address.");
+            setLoading(false);
+            return;
+        }
+
         try {
             const response = await fetch("/api/unsubscribe", {
                 method: "POST",
@@ -19,17 +26,33 @@ export default function UnsubscribePage() {
                 body: JSON.stringify({ email }),
             });
 
-            const data = await response.json();
+            // Attempt to parse response
+            let data;
+            try {
+                data = await response.json();
+            } catch (error) {
+                setMessage("Invalid response from server. Please try again later.");
+                return;
+            }
+
             if (response.ok) {
                 setMessage("You have been unsubscribed successfully.");
+            } else if (response.status === 404) {
+                setMessage("Email not found. Did you mean to subscribe instead?");
+            } else if (response.status === 400) {
+                setMessage("Invalid request. Please check your input and try again.");
             } else {
                 setMessage(data.error || "An error occurred. Please try again.");
             }
         } catch (error) {
-            setMessage("Failed to connect to the server.");
+            setMessage("Failed to connect to the server. Please check your internet connection.");
         } finally {
             setLoading(false);
         }
+    };
+
+    const validateEmail = (email) => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     };
 
     return (
