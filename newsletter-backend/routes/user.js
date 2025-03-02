@@ -12,18 +12,23 @@ router.post("/subscribe", async (req, res) => {
         if (!user) {
             user = new User({ email, categories, frequency });
             await user.save();
-
-            // Send confirmation email
-            // await sendConfirmationEmail(email, categories, frequency);
         } else {
             user.categories = categories;
             user.frequency = frequency;
             await user.save();
         }
 
-        res.json({ message: "✅ Subscription updated successfully" });
+        // Send newsletter immediately after signup
+        try {
+            await sendNewsletter(email);
+            console.log(`✅ Welcome newsletter sent to ${email}`);
+        } catch (newsletterError) {
+            console.error("❌ Error sending welcome newsletter:", newsletterError);
+        }
+
+        res.json({ message: "✅ Subscription updated successfully. A welcome newsletter has been sent!" });
     } catch (error) {
-        console.error("❌ Error saving user:", error);
+        console.error("❌ Error subscribing user:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });

@@ -1,7 +1,7 @@
 const sgMail = require("@sendgrid/mail");
 const { fetchTopStoriesByCategory } = require("./newsService");
 const { summarizeArticle } = require("./aiService");
-const User = require("../models/User"); // Fetch users from MongoDB
+const User = require("../models/User");
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -37,50 +37,67 @@ async function sendNewsletter(email) {
             return;
         }
 
-        // 5️⃣ Build the email content
+        // 5️⃣ Build the email content with NuBrief branding
         let newsletter = `
-            <h1 style="font-size:24px; color:#333;">🗞️ Your Personalized News Digest</h1>
-            <p style="font-size:16px; color:#555;">Here are today's top stories from your chosen categories:</p>
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+                
+                <!-- NuBrief Logo & Branding -->
+                <div style="text-align: center; padding-bottom: 15px;">
+                </div>
+
+                <hr style="border: 1px solid #ddd; margin: 20px 0;">
         `;
 
         for (const [category, articles] of Object.entries(filteredArticles)) {
-            newsletter += `<h2 style="font-size:20px; color:#007bff;">${category.toUpperCase()}</h2>`;
+            newsletter += `
+                <h2 style="font-size: 20px; color: #007bff; text-transform: capitalize;">${category}</h2>
+            `;
 
             for (const [index, article] of articles.entries()) {
-                // ✅ Fix: Extract summary TEXT from `summarizeArticle`
+                // ✅ Extract summary TEXT from `summarizeArticle`
                 const summaryObj = await summarizeArticle(article);
                 const summary = summaryObj.summary || "Summary not available."; // Extract text
 
-                // ✅ Fix: Use the correct `image_url` key from API response
+                // ✅ Use the correct `image_url` key from API response
                 const imageUrl = article.image_url && article.image_url.startsWith("http")
                     ? article.image_url
                     : "https://via.placeholder.com/600x300?text=No+Image+Available"; // Fallback image
 
-                console.log(`🔹 Image URL for article: ${imageUrl}`);
-
                 newsletter += `
-                    <div style="margin-bottom: 20px;">
-                        <h3 style="font-size:18px; color:#333;">${index + 1}. ${article.title}</h3>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h3 style="font-size: 18px; color: #333; margin: 10px 0;">${index + 1}. ${article.title}</h3>
                         <img src="${imageUrl}" alt="News Image" style="width:100%; max-width:600px; border-radius:5px; display:block; margin: 10px auto;">
-                        <p style="font-size:16px; color:#555;">${summary}</p>
-                        <a href="${article.url}" style="font-size:14px; color:#007bff;">Read more</a>
-                        <hr style="border:1px solid #ddd; margin:20px 0;">
+                        <p style="font-size: 16px; color: #555;">${summary}</p>
+                        <a href="${article.url}" 
+                           style="display: inline-block; text-decoration: none; background: #007bff; color: white; padding: 8px 15px; border-radius: 5px; font-size: 14px; margin-top: 10px;">
+                            Read More
+                        </a>
                     </div>
                 `;
             }
         }
 
         newsletter += `
-            <p style="font-size:14px; color:#888;">
-                Thank you for subscribing! If you wish to change your preferences or unsubscribe, 
-                <a href="http://localhost:4000/preferences" style="color:#d9534f;">click here</a>.
+            <hr style="border: 1px solid #ddd; margin: 20px 0;">
+            <p style="text-align: center; font-size: 14px; color: #888;">
+                Thank you for subscribing to <strong>NuBrief</strong>! 🎉 Stay informed with the latest news.
             </p>
+
+            <!-- Manage Preferences & Unsubscribe -->
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="http://localhost:3000/unsubscribe" 
+                   style="text-decoration: none; background: #d9534f; color: white; padding: 10px 20px; border-radius: 5px; font-size: 14px;">
+                    Manage Preferences
+                </a>
+                <p style="margin-top: 10px; font-size: 12px; color: #aaa;">If you no longer wish to receive these emails, you can <a href="http://localhost:3000/unsubscribe" style="color: #d9534f;">unsubscribe here</a>.</p>
+            </div>
+        </div>
         `;
 
         // 6️⃣ Send the email
         const msg = {
             to: email,
-            from: "1nishant2002@gmail.com",
+            from: "news@nubrief.co",
             subject: "🗞️ Your Personalized News Digest",
             html: newsletter,
         };
