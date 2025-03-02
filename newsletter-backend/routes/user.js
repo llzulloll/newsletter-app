@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
-const { sendConfirmationEmail } = require("../services/emailService");
+const { sendConfirmationEmail, sendNewsletter } = require("../services/emailService");
 
 // Subscribe a user
 router.post("/subscribe", async (req, res) => {
@@ -40,26 +40,22 @@ router.post("/unsubscribe", async (req, res) => {
     }
 });
 
-const { sendNewsletter } = require("../services/emailService");
-
-router.post("/send-newsletter", async (req, res) => {
+router.post("/sendNewsletter", async (req, res) => {
     try {
-        const { email, categories } = req.body;
-        let newsSummaries = [];
+        const { email } = req.body;
 
-        for (const category of categories) {
-            const articles = await fetchNews(category);
-            for (const article of articles) {
-                const summary = await summarizeText(article.content || article.description);
-                newsSummaries.push({ title: article.title, summary, url: article.url });
-            }
+        // Check if user exists
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ error: "Email not found. Please subscribe first." });
         }
 
-        await sendNewsletter(email, newsSummaries);
-        res.json({ message: "✅ Newsletter sent successfully" });
+        // Send newsletter email
+        await sendNewsletter(email);
+        res.json({ message: `✅ Newsletter sent to ${email}` });
     } catch (error) {
         console.error("❌ Error sending newsletter:", error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ error: "Failed to send newsletter." });
     }
 });
 

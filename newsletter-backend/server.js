@@ -15,5 +15,10 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 
 app.use("/api", userRoutes);
 
+const CronJobManager = require("./newsletter-backend/scripts/cronJob");
+
+const newsletterJob = new CronJobManager();
+newsletterJob.runJob(); // Manually trigger the job once
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
